@@ -25,7 +25,9 @@ def guess_tags_versions(file_path):
     mp3_file.seek(-128, 2)  # todo make save
     if mp3_file.read(3) == 'TAG':
         versions.append(const.ID3v1_VERSION)
-        versions.append(const.ID3v1_1_VERSION)
+        mp3_file.seek(-3, 2)
+        if mp3_file.read(1) == '\x00':  # todo test
+            versions.append(const.ID3v1_1_VERSION)
 
     mp3_file.seek(0)
     if mp3_file.read(3) == 'ID3':
@@ -111,7 +113,7 @@ def remove_ID3_1_tag(file_path, preserve_file_stat=False):  # todo test
     mp3_file.close()
 
     if preserve_file_stat:
-        _write_file_stat(file_path, mode)
+        _write_file_stat(file_path, stat, mode)
 
 
 def _read_file_stat(file_path):  # todo test
@@ -139,3 +141,11 @@ def _write_file_stat(file_path, file_stat, mode):  # todo test
                     break
             else:
                 raise
+
+
+def remove_tag_from_begin():  # todo
+    raise NotImplementedError()
+
+
+def remove_tag_from_end():  # todo
+    raise NotImplementedError()
