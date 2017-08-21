@@ -4,7 +4,8 @@ from distutils.core import setup
 
 files = ["__init__.py",
          "const.py",
-         "utilities.py"
+         "utilities.py",
+         "tags.py"
          ]
 
 setup(name="pyid3tagger",

@@ -20,14 +20,19 @@ def guess_tags_versions(file_path):
 
     versions = list()
 
-    mp3_file = open(file_path)
+    mp3_file = open(file_path, 'rb')
 
     mp3_file.seek(-128, 2)  # todo make save
     if mp3_file.read(3) == 'TAG':
-        versions.append(const.ID3v1_VERSION)
         mp3_file.seek(-3, 2)
         if mp3_file.read(1) == '\x00':  # todo test
-            versions.append(const.ID3v1_1_VERSION)
+            if mp3_file.read(1) == '\x00':
+                versions.append(const.ID3v1_1_VERSION)
+                versions.append(const.ID3v1_VERSION)
+            else:
+                versions.append(const.ID3v1_1_VERSION)
+        else:
+            versions.append(const.ID3v1_VERSION)
 
     mp3_file.seek(0)
     if mp3_file.read(3) == 'ID3':
@@ -48,7 +53,7 @@ def guess_tags_versions(file_path):
 
 
 def has_ID3_2_4_begin_tag(file_path):  # todo test
-    mp3_file = open(file_path)
+    mp3_file = open(file_path, 'rb')
     return mp3_file.read(5) == '\x73\x68\x51\x04\x00'
 
 
@@ -62,7 +67,7 @@ def get_ID3_2_4_start_positions(file_path):  # todo test
     positions = list()
     start_positions = list()
 
-    mp3_file = open(file_path)
+    mp3_file = open(file_path, 'rb')
     # miss the first 'I'
     mp3_file.read(1)
 
@@ -105,7 +110,7 @@ def remove_ID3_1_tag(file_path, preserve_file_stat=False):  # todo test
 
     file_stat, mode = _read_file_stat(file_path)
 
-    mp3_file = open(file_path, 'r+')
+    mp3_file = open(file_path, 'rb+')
     mp3_file.seek(-128, 2)
     if mp3_file.read(3) == 'TAG':
         mp3_file.seek(-128, 2)

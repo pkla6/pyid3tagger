@@ -5,4 +5,6 @@ Work is still in progress.
 
 Implemented so far:
 * guess tag type
-* remove id3v1/id3v1.1 tag
+* remove v1/ v1.1 tag
+* Read v1 / v1.1 tag
+* Write v1 / v1.1 tag
