@@ -9,6 +9,11 @@ import pyid3tagger
 
 class ID3v1Test(unittest.TestCase):
 
+    def compare_files(self, file_path_1, file_path_2):
+        file_1_content = open(file_path_1).read()
+        file_2_content = open(file_path_2).read()
+        self.assertEqual(file_1_content, file_2_content, 'Files are not equal')
+
     def test_write_id3v1_tag(self):
         source_path = 'TestData\\no_tag.mp3'
         target_path = 'test.mp3'
@@ -63,7 +68,6 @@ class ID3v1Test(unittest.TestCase):
 
     # todo test exceptions
     #   test cases for year
-    # todo read tests
 
     def test_read_id3v1_test_case_1(self):
         tag = pyid3tagger.ID3v1Tag()
@@ -277,6 +281,249 @@ class ID3v1Test(unittest.TestCase):
         self.assertEqual(0, tag.track)
         self.assertEqual(24, tag.genre)
 
+    def test_write_id3v1_test_case_1(self):
+        if os.path.exists('test.mp3'):
+            os.remove('test.mp3')
+        shutil.copyfile('TestData\\no_tag.mp3', 'test.mp3')
+
+        tag = pyid3tagger.ID3v1Tag()
+        tag.title = 'Title'
+        tag.artist = 'Artist'
+        tag.album = 'Album'
+        tag.year = 2003
+        tag.comment = 'Comment'
+        tag.genre = pyid3tagger.ID3v1_GENERES.HIP_HOP
+
+        tag.write('test.mp3')
+        self.compare_files('TestData\\id3v1\\id3v1_001_basic.mp3', 'test.mp3')
+        os.remove('test.mp3')
+
+    def test_write_id3v1_1_test_case_2(self):
+        if os.path.exists('test.mp3'):
+            os.remove('test.mp3')
+        shutil.copyfile('TestData\\no_tag.mp3', 'test.mp3')
+
+        tag = pyid3tagger.ID3v1_1Tag()
+        tag.title = 'Title'
+        tag.artist = 'Artist'
+        tag.album = 'Album'
+        tag.year = 2003
+        tag.comment = 'Comment'
+        tag.track = 12
+        tag.genre = pyid3tagger.ID3v1_GENERES.HIP_HOP
+
+        tag.write('test.mp3')
+        self.compare_files('TestData\\id3v1\\id3v1_002_basic.mp3', 'test.mp3')
+        os.remove('test.mp3')
+
+    def test_write_id3v1_1_test_case_4(self):
+        if os.path.exists('test.mp3'):
+            os.remove('test.mp3')
+        shutil.copyfile('TestData\\no_tag.mp3', 'test.mp3')
+
+        tag = pyid3tagger.ID3v1Tag()
+        tag.title = ''
+        tag.artist = ''
+        tag.album = ''
+        tag.year = 2003
+        tag.comment = ''
+        tag.genre = pyid3tagger.ID3v1_GENERES.BLUES
+
+        tag.write('test.mp3')
+        self.compare_files('TestData\\id3v1\\id3v1_004_basic.mp3', 'test.mp3')
+        os.remove('test.mp3')
+
+    def test_write_id3v1_1_test_case_5(self):
+        if os.path.exists('test.mp3'):
+            os.remove('test.mp3')
+        shutil.copyfile('TestData\\no_tag.mp3', 'test.mp3')
+
+        tag = pyid3tagger.ID3v1Tag()
+        tag.title = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaA'
+        tag.artist = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbB'
+        tag.album = 'cccccccccccccccccccccccccccccC'
+        tag.year = 2003
+        tag.comment = 'dddddddddddddddddddddddddddddD'
+        tag.genre = pyid3tagger.ID3v1_GENERES.BLUES
+
+        tag.write('test.mp3')
+        self.compare_files('TestData\\id3v1\\id3v1_005_basic.mp3', 'test.mp3')
+        os.remove('test.mp3')
+
+    def test_write_id3v1_1_test_case_6(self):
+        if os.path.exists('test.mp3'):
+            os.remove('test.mp3')
+        shutil.copyfile('TestData\\no_tag.mp3', 'test.mp3')
+
+        tag = pyid3tagger.ID3v1_1Tag()
+        tag.title = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaA'
+        tag.artist = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbB'
+        tag.album = 'cccccccccccccccccccccccccccccC'
+        tag.year = 2003
+        tag.track = 1
+        tag.comment = 'dddddddddddddddddddddddddddD'
+        tag.genre = pyid3tagger.ID3v1_GENERES.BLUES
+
+        tag.write('test.mp3')
+        self.compare_files('TestData\\id3v1\\id3v1_006_basic.mp3', 'test.mp3')
+        os.remove('test.mp3')
+
+    def test_write_id3v1_1_test_case_9(self):
+        if os.path.exists('test.mp3'):
+            os.remove('test.mp3')
+        shutil.copyfile('TestData\\no_tag.mp3', 'test.mp3')
+
+        tag = pyid3tagger.ID3v1_1Tag()
+        tag.title = ''
+        tag.artist = ''
+        tag.album = ''
+        tag.year = 2003
+        tag.track = 255
+        tag.comment = ''
+        tag.genre = pyid3tagger.ID3v1_GENERES.BLUES
+
+        tag.write('test.mp3')
+        self.compare_files('TestData\\id3v1\\id3v1_009_basic.mp3', 'test.mp3')
+        os.remove('test.mp3')
+
+    def test_write_id3v1_1_test_case_10(self):
+        if os.path.exists('test.mp3'):
+            os.remove('test.mp3')
+        shutil.copyfile('TestData\\no_tag.mp3', 'test.mp3')
+
+        tag = pyid3tagger.ID3v1Tag()
+        tag.title = ''
+        tag.artist = ''
+        tag.album = ''
+        tag.year = 0
+        tag.comment = ''
+        tag.genre = pyid3tagger.ID3v1_GENERES.BLUES
+
+        tag.write('test.mp3')
+        self.compare_files('TestData\\id3v1\\id3v1_010_year.mp3', 'test.mp3')
+        os.remove('test.mp3')
+
+    def test_write_id3v1_1_test_case_11(self):
+        if os.path.exists('test.mp3'):
+            os.remove('test.mp3')
+        shutil.copyfile('TestData\\no_tag.mp3', 'test.mp3')
+
+        tag = pyid3tagger.ID3v1Tag()
+        tag.title = ''
+        tag.artist = ''
+        tag.album = ''
+        tag.year = 9999
+        tag.comment = ''
+        tag.genre = pyid3tagger.ID3v1_GENERES.BLUES
+
+        tag.write('test.mp3')
+        self.compare_files('TestData\\id3v1\\id3v1_011_year.mp3', 'test.mp3')
+        os.remove('test.mp3')
+
+    def test_write_id3v1_test_case_genres(self):
+        for i in range(80):
+            if os.path.exists('test.mp3'):
+                os.remove('test.mp3')
+            shutil.copyfile('TestData\\no_tag.mp3', 'test.mp3')
+
+            tag = pyid3tagger.ID3v1Tag()
+            tag.title = pyid3tagger.ID3v1_GENERES.GENRE_2_NAME[i]
+            tag.year = 2003
+            tag.genre = i
+
+            tag.write('test.mp3')
+            self.compare_files('TestData\\id3v1\\id3v1_%03i_genre.mp3' % (i + 15,), 'test.mp3')
+            os.remove('test.mp3')
+
+    def test_write_id3v1_test_case_genres_w(self):
+        for i in range(80, 148):
+            if os.path.exists('test.mp3'):
+                os.remove('test.mp3')
+            shutil.copyfile('TestData\\no_tag.mp3', 'test.mp3')
+
+            tag = pyid3tagger.ID3v1Tag()
+            tag.title = pyid3tagger.ID3v1_GENERES.GENRE_2_NAME[i]
+            tag.year = 2003
+            tag.genre = i
+
+            tag.write('test.mp3')
+            self.compare_files('TestData\\id3v1\\id3v1_%03i_genre_W.mp3' % (i + 15,), 'test.mp3')
+            os.remove('test.mp3')
+
+    def test_write_id3v1_test_case_genres_f(self):
+        for i in range(148, 256):
+            if os.path.exists('test.mp3'):
+                os.remove('test.mp3')
+            shutil.copyfile('TestData\\no_tag.mp3', 'test.mp3')
+
+            tag = pyid3tagger.ID3v1Tag()
+            tag.title = 'Unknown/%i' % i
+            tag.year = 2003
+            tag.genre = i
+
+            tag.write('test.mp3')
+            self.compare_files('TestData\\id3v1\\id3v1_%03i_genre_F.mp3' % (i + 15,), 'test.mp3')
+            os.remove('test.mp3')
+
+    def test_write_id3v1_test_case_271(self):
+        if os.path.exists('test.mp3'):
+            os.remove('test.mp3')
+        shutil.copyfile('TestData\\no_tag.mp3', 'test.mp3')
+
+        tag = pyid3tagger.ID3v1Tag()
+        tag.title = u'räksmörgås'.encode('latin-1')
+        tag.artist = u'räksmörgås'.encode('latin-1')
+        tag.album = u'räksmörgås'.encode('latin-1')
+        tag.year = 2003
+        tag.comment = u'räksmörgås'.encode('latin-1')
+        tag.genre = pyid3tagger.ID3v1_GENERES.BLUES
+
+        tag.write('test.mp3')
+        self.compare_files('TestData\\id3v1\\id3v1_271_extra.mp3', 'test.mp3')
+        os.remove('test.mp3')
+
+    def test_write_id3v1_test_case_272(self):
+        if os.path.exists('test.mp3'):
+            os.remove('test.mp3')
+        shutil.copyfile('TestData\\no_tag.mp3', 'test.mp3')
+
+        tag = pyid3tagger.ID3v1Tag()
+        tag.title = u'räksmörgås'.encode('utf-8')
+        tag.artist = u'räksmörgås'.encode('utf-8')
+        tag.album = u'räksmörgås'.encode('utf-8')
+        tag.year = 2003
+        tag.comment = u'räksmörgås'.encode('utf-8')
+        tag.genre = pyid3tagger.ID3v1_GENERES.BLUES
+
+        tag.write('test.mp3')
+        self.compare_files('TestData\\id3v1\\id3v1_272_extra.mp3', 'test.mp3')
+        os.remove('test.mp3')
+
+    def test_write_id3v1_test_case_273(self):
+        if os.path.exists('test.mp3'):
+            os.remove('test.mp3')
+        shutil.copyfile('TestData\\no_tag.mp3', 'test.mp3')
+
+        tag = pyid3tagger.ID3v1Tag()
+        tag.year = 2003
+        tag.comment = 'http://www.id3.org/'
+
+        tag.write('test.mp3')
+        self.compare_files('TestData\\id3v1\\id3v1_273_extra.mp3', 'test.mp3')
+        os.remove('test.mp3')
+
+    def test_write_id3v1_test_case_274(self):
+        if os.path.exists('test.mp3'):
+            os.remove('test.mp3')
+        shutil.copyfile('TestData\\no_tag.mp3', 'test.mp3')
+
+        tag = pyid3tagger.ID3v1Tag()
+        tag.year = 2003
+        tag.comment = 'www.id3.org/'
+
+        tag.write('test.mp3')
+        self.compare_files('TestData\\id3v1\\id3v1_274_extra.mp3', 'test.mp3')
+        os.remove('test.mp3')
 
 if __name__ == '__main__':
     unittest.main()
