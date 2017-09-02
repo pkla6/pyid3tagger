@@ -1,6 +1,5 @@
 # coding=utf-8
 
-import struct
 
 import pyid3tagger.const as const
 import pyid3tagger.utilities as utilities
@@ -143,7 +142,7 @@ class ID3v1Tag(ID3v1BaseClass):
         mp3_file.write(year_tag[:4])
         comment_tag = self.base_tag % self.comment
         mp3_file.write(comment_tag[:30])
-        genre_tag = struct.pack('h', self.genre)
+        genre_tag = chr(max(min(self.genre, 255), 0))
         mp3_file.write(genre_tag[0])
 
     # todo convert to other types
@@ -217,9 +216,9 @@ class ID3v1_1Tag(ID3v1BaseClass):
         comment_tag = self.base_tag % self.comment
         mp3_file.write(comment_tag[:28])
         mp3_file.write('\x00')
-        track_tag = struct.pack('h', self.track)
+        track_tag = chr(max(min(self.track, 255), 0))
         mp3_file.write(track_tag[0])
-        genre_tag = struct.pack('h', self.genre)
+        genre_tag = chr(max(min(self.genre, 255), 0))
         mp3_file.write(genre_tag[0])
 
     # todo convert to other types

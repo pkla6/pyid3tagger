@@ -3,6 +3,7 @@
 import errno
 import os
 import stat
+import tempfile
 
 import pyid3tagger.const as const
 
@@ -22,17 +23,21 @@ def guess_tags_versions(file_path):
 
     mp3_file = open(file_path, 'rb')
 
-    mp3_file.seek(-128, 2)  # todo make save
-    if mp3_file.read(3) == 'TAG':
-        mp3_file.seek(-3, 2)
-        if mp3_file.read(1) == '\x00':  # todo test
-            if mp3_file.read(1) == '\x00':
-                versions.append(const.ID3v1_1_VERSION)
-                versions.append(const.ID3v1_VERSION)
+    try:
+        mp3_file.seek(-128, 2)  # todo make save
+    except:
+        pass
+    else:
+        if mp3_file.read(3) == 'TAG':
+            mp3_file.seek(-3, 2)
+            if mp3_file.read(1) == '\x00':  # todo test
+                if mp3_file.read(1) == '\x00':
+                    versions.append(const.ID3v1_1_VERSION)
+                    versions.append(const.ID3v1_VERSION)
+                else:
+                    versions.append(const.ID3v1_1_VERSION)
             else:
-                versions.append(const.ID3v1_1_VERSION)
-        else:
-            versions.append(const.ID3v1_VERSION)
+                versions.append(const.ID3v1_VERSION)
 
     mp3_file.seek(0)
     if mp3_file.read(3) == 'ID3':
@@ -46,7 +51,7 @@ def guess_tags_versions(file_path):
 
     mp3_file.close()
 
-    if get_ID3_2_4_start_positions(file_path):
+    if get_ID3_2_4_end_tag_start_positions(file_path):
         versions.append(const.ID3v2_4_VERSION)
 
     return tuple(versions)
@@ -57,7 +62,7 @@ def has_ID3_2_4_begin_tag(file_path):  # todo test
     return mp3_file.read(5) == '\x73\x68\x51\x04\x00'
 
 
-def get_ID3_2_4_start_positions(file_path):  # todo test
+def get_ID3_2_4_end_tag_start_positions(file_path):  # todo test
     """
 
     :param file_path:
@@ -81,7 +86,7 @@ def get_ID3_2_4_start_positions(file_path):  # todo test
 
     for position in positions:
         mp3_file.seek(position)
-        if mp3_file.read(5) == '\x73\x68\x51\x04\x00':
+        if mp3_file.read(5) == '\x73\x68\x51\x04\x00':  # todo check end tag 3DI
             start_positions.append(position)
 
     return tuple(start_positions)
@@ -146,6 +151,44 @@ def _write_file_stat(file_path, file_stat, mode):  # todo test
                     break
             else:
                 raise
+
+
+def int_from_sync_save_byte(byte):
+    integer = ord(byte)
+    if integer > 127:
+        raise  # todo
+    return integer
+
+
+def int_from_sync_save_bytes(bytes):  # todo test
+    integer = int_from_sync_save_byte(bytes[0])
+    for byte in bytes[1:]:
+        integer = integer << 7 + int_from_sync_save_byte(byte)
+    return integer
+
+
+def int_to_sync_save_byte(integer):  # todo test
+    if integer > 127:
+        raise  # todo
+    return chr(integer)
+
+
+def int_to_four_sync_save_bytes(integer):  # todo test
+    if integer > 268435456:
+        raise  # todo
+    b1_3, b4 = divmod(integer, 128)
+    b1_2, b3 = divmod(integer, 128)
+    b1, b2 = divmod(integer, 128)
+    byte_string = int_to_sync_save_byte(b1) + int_to_sync_save_byte(b2) + \
+                  int_to_sync_save_byte(b3) + int_to_sync_save_byte(b4)
+    return byte_string
+
+
+def byte_to_bin(byte):  # todo test
+    if len(byte) != 1:
+        raise  # todo
+    byte = '00000000' + bin(ord(byte))[2:]
+    return byte[-8:]
 
 
 def remove_tag_from_begin():  # todo
