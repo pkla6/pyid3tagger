@@ -161,9 +161,11 @@ def int_from_sync_save_byte(byte):
 
 
 def int_from_sync_save_bytes(bytes):  # todo test
-    integer = int_from_sync_save_byte(bytes[0])
-    for byte in bytes[1:]:
-        integer = integer << 7 + int_from_sync_save_byte(byte)
+    counter = 0
+    integer = 0
+    for byte in bytes[::-1]:
+        integer =  (int_from_sync_save_byte(byte) * 2 ** (7 * counter)) + integer
+        counter += 1
     return integer
 
 
@@ -173,16 +175,31 @@ def int_to_sync_save_byte(integer):  # todo test
     return chr(integer)
 
 
+def int_to_byte(integer):  # todo test
+    if integer > 2 ** 8 - 1:
+        raise  # todo
+    return chr(integer)
+
+
 def int_to_four_sync_save_bytes(integer):  # todo test
     if integer > 268435456:
         raise  # todo
     b1_3, b4 = divmod(integer, 128)
-    b1_2, b3 = divmod(integer, 128)
-    b1, b2 = divmod(integer, 128)
+    b1_2, b3 = divmod(b1_3, 128)
+    b1, b2 = divmod(b1_2, 128)
     byte_string = int_to_sync_save_byte(b1) + int_to_sync_save_byte(b2) + \
                   int_to_sync_save_byte(b3) + int_to_sync_save_byte(b4)
     return byte_string
 
+def int_to_four_bytes(integer):  # todo test
+    if integer >=  2 ** 32:
+        raise  # todo
+    b1_3, b4 = divmod(integer, 2 ** 8)
+    b1_2, b3 = divmod(b1_3, 2 ** 8)
+    b1, b2 = divmod(b1_2, 2 ** 8)
+    byte_string = int_to_byte(b1) + int_to_byte(b2) + \
+                  int_to_byte(b3) + int_to_byte(b4)
+    return byte_string
 
 def byte_to_bin(byte):  # todo test
     if len(byte) != 1:
@@ -190,10 +207,15 @@ def byte_to_bin(byte):  # todo test
     byte = '00000000' + bin(ord(byte))[2:]
     return byte[-8:]
 
+def check_is_ISO_639_2_code(code):
+    return code in const.LANGUAGE_CODES_ISO_639_2_DICT.keys()
 
-def remove_tag_from_begin():  # todo
-    raise NotImplementedError()
+def check_is_ISO_8859_1_text(text):
+    if not isinstance(str, text):
+        return False
+    return all(['\x20' <= i <= '\xff' for i in text])
 
-
-def remove_tag_from_end():  # todo
-    raise NotImplementedError()
+def check_is_ISO_8859_1_full_text(text):
+    if not isinstance(str, text):
+        return False
+    return all([('\x20' <= i <= '\xff' or i == '\xa0') for i in text])

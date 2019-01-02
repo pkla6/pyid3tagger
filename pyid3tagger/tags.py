@@ -6,7 +6,7 @@ import pyid3tagger.utilities as utilities
 
 __author__ = "Peter Klassen peter@mediadock.org"
 __license__ = "MIT License"
-__copyright__ = "(c) 2017 Peter Klassen peter@mediadock.org"
+__copyright__ = "(c) 2019 Peter Klassen peter@mediadock.org"
 
 
 class ID3v1BaseClass(object):
@@ -119,6 +119,22 @@ class ID3v1Tag(ID3v1BaseClass):
         self.comment = mp3_file.read(30).split('\x00')[0]
         self.genre = ord(mp3_file.read(1))
 
+    def generate(self):
+        tag = 'TAG'
+        title_tag = self.base_tag % self.title
+        tag += title_tag[:30]
+        artist_tag = self.base_tag % self.artist
+        tag += artist_tag[:30]
+        album_tag = self.base_tag % self.album
+        tag += album_tag[:30]
+        year_tag = '%04i' % self.year
+        tag += year_tag[:4]
+        comment_tag = self.base_tag % self.comment
+        tag += comment_tag[:30]
+        genre_tag = chr(max(min(self.genre, 255), 0))
+        tag += genre_tag[0]
+        return tag
+
     def write(self, file_path=None):
         if not self.file_path and not file_path:
             raise const.PyID3TaggerFilePathException('No file path specified')
@@ -131,19 +147,7 @@ class ID3v1Tag(ID3v1BaseClass):
         except IOError as ioerror:
             raise const.PyID3TaggerIOError(ioerror.message)
 
-        mp3_file.write('TAG')
-        title_tag = self.base_tag % self.title
-        mp3_file.write(title_tag[:30])
-        artist_tag = self.base_tag % self.artist
-        mp3_file.write(artist_tag[:30])
-        album_tag = self.base_tag % self.album
-        mp3_file.write(album_tag[:30])
-        year_tag = '%04i' % self.year
-        mp3_file.write(year_tag[:4])
-        comment_tag = self.base_tag % self.comment
-        mp3_file.write(comment_tag[:30])
-        genre_tag = chr(max(min(self.genre, 255), 0))
-        mp3_file.write(genre_tag[0])
+        mp3_file.write(self.generate())
 
     # todo convert to other types
 
@@ -192,6 +196,25 @@ class ID3v1_1Tag(ID3v1BaseClass):
         self.track = ord(mp3_file.read(1))
         self.genre = ord(mp3_file.read(1))
 
+    def generate(self):
+        tag = 'TAG'
+        title_tag = self.base_tag % self.title
+        tag += title_tag[:30]
+        artist_tag = self.base_tag % self.artist
+        tag += artist_tag[:30]
+        album_tag = self.base_tag % self.album
+        tag += album_tag[:30]
+        year_tag = '%04i' % self.year
+        tag += year_tag[:4]
+        comment_tag = self.base_tag % self.comment
+        tag += comment_tag[:28]
+        tag += '\x00'
+        track_tag = chr(max(min(self.track, 255), 0))
+        tag += track_tag[0]
+        genre_tag = chr(max(min(self.genre, 255), 0))
+        tag += genre_tag[0]
+        return tag
+
     def write(self, file_path=None):
         if not self.file_path and not file_path:
             raise const.PyID3TaggerFilePathException('No file path specified')
@@ -204,25 +227,46 @@ class ID3v1_1Tag(ID3v1BaseClass):
         except IOError as ioerror:
             raise const.PyID3TaggerIOError(ioerror.message)
 
-        mp3_file.write('TAG')
-        title_tag = self.base_tag % self.title
-        mp3_file.write(title_tag[:30])
-        artist_tag = self.base_tag % self.artist
-        mp3_file.write(artist_tag[:30])
-        album_tag = self.base_tag % self.album
-        mp3_file.write(album_tag[:30])
-        year_tag = '%04i' % self.year
-        mp3_file.write(year_tag[:4])
-        comment_tag = self.base_tag % self.comment
-        mp3_file.write(comment_tag[:28])
-        mp3_file.write('\x00')
-        track_tag = chr(max(min(self.track, 255), 0))
-        mp3_file.write(track_tag[0])
-        genre_tag = chr(max(min(self.genre, 255), 0))
-        mp3_file.write(genre_tag[0])
+        mp3_file.write(self.generate())
 
     # todo convert to other types
 
 
-class ID3v2BaseClass(object):
-    pass
+class ID3v2_3Tag(object):
+
+    file_identifier = "ID3"
+    version = '\x03\x00'
+
+    def __init__(self):
+        self.frames = list()
+        self.padding_size = 1256
+
+    @property
+    def unsynchronisation(self):
+        return False  # todo
+
+    def extended_header(self):
+        return False  # todo
+
+    def experimental_indicator(self):
+        return False  # todo
+
+    def generate(self):
+        tag = self.__class__.file_identifier + self.__class__.version
+        tag += chr(self.unsynchronisation * 2 ** 7 +
+                   self.extended_header() * 2 ** 6 +
+                   self.experimental_indicator() * 2 ** 5)
+        frames = ''
+        for frame in self.frames:
+            frames += frame.generate()
+        if self.unsynchronisation:
+            pass
+            # todo unsynchronize frames
+        # todo extended header
+        if len(frames) == 0:
+            return ''
+        if len(frames) < self.padding_size:
+            frames += '\x00' * (self.padding_size - len(frames))
+        tag += utilities.int_to_four_sync_save_bytes(len(frames))
+        tag += frames
+        return tag

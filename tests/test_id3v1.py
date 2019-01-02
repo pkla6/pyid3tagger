@@ -525,5 +525,6 @@ class ID3v1Test(unittest.TestCase):
         self.compare_files('TestData\\id3v1\\id3v1_274_extra.mp3', 'test.mp3')
         os.remove('test.mp3')
 
+
 if __name__ == '__main__':
     unittest.main()
